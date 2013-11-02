@@ -157,7 +157,7 @@ var commandArray = [];
 var startTime;
 var logger = function(key) {
 
-    if (key == 'h' || key == ' ') return;
+    if (key == h || key == space) return;
 
     if (commandArray.length == 0) {
         console.log('Timer started');
@@ -196,7 +196,7 @@ var playReverse = function() {
     while (commandArray.length > 0) {
         var cmd = commandArray.pop();
         time = tempTime - cmd.time;
-        tempTime = cmd.time;
+        // tempTime = cmd.time;
         setTimeout(applyAll, time, cmd);
     }
 
