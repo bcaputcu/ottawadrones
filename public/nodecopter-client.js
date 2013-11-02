@@ -1173,8 +1173,8 @@ var FilterWebGLCanvas = (function () {
     }
 
     function setupCanvas(div) {
-        var width = div.attributes.width ? div.attributes.width.value : 1280,
-            height = div.attributes.height ? div.attributes.height.value : 720,
+        var width = div.attributes.width ? div.attributes.width.value : 640,
+            height = div.attributes.height ? div.attributes.height.value : 360,
             canvas = document.createElement('canvas');
 
         canvas.width = width;
