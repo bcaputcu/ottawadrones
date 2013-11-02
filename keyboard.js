@@ -153,6 +153,58 @@ var showVideo = function() {
     var tcpVideo = client.getVideoStream()
 }
 
+var commandArray = [];
+var startTime;
+var logger = function(key) {
+
+    if (key == 'h' || key == ' ') return;
+
+    if (commandArray.length == 0) {
+        startTime = Date.now();
+        time = 0;
+    } else {
+        time = Date.now() - startTime;
+    }
+
+    commandArray.push({
+        'key': key,
+        'time': time,
+        'yaw': yaw,
+        'pitch': pitch,
+        'roll': roll,
+        'climb': climb
+    });
+}
+
+var applyAll = function(cmd) {
+    applyYaw(cmd.yaw * -1.0);
+    applyPitch(cmd.pitch * -1.0);
+    applyRoll(cmd.roll * -1.0);
+    applyClimb(cmd.climb * -1.0);
+}
+
+var playReverse = function() {
+
+    if ( commandArray.length == 0 ) return;
+
+    var endTime = commandArray[commandArray.length-1].time;
+    var tempTime = endTime;
+
+    while (commandArray.length > 0) {
+        var cmd = commandArray.pop();
+        time = tempTime - cmd.time;
+        tempTime = cmd.time;
+        setTimeout(applyAll, time, cmd);
+    }
+
+    setTimeout(applyAll, endTime, {'yaw': 0, 'pitch': 0, 'roll': 0, 'climb': 0 });
+    setTimeout(function() {
+        console.log("AUTO LAND");
+        client.land();
+    }, endTime + 100);
+
+}
+
 // Dispatch
 // Dispatch
 // Dispatch
@@ -187,6 +239,9 @@ var dispatchKey = function(key) {
         break;
     case 't':
         stabilize();
+        break;
+    case 'h':
+        playReverse();
         break;
     default:
         process.stdout.write("Not handled: " + key + "\n");
