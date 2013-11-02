@@ -2,6 +2,15 @@ var arDrone = require('ar-drone');
 var client = arDrone.createClient();
 var stdin = process.stdin;
 
+var io = require('socket.io').listen(3002);
+io.set('log level', 1);
+
+var express = require('express'),
+    app = express(),
+    server = require('http').createServer(app);
+app.use(express.static(__dirname + '/public'));
+
+
 // Take Off
 // Take Off
 // Take Off
@@ -52,7 +61,7 @@ var pitchRate = 0.1;
 var applyPitch = function(pitch) {
     if (pitch > 0.0) {
         console.log("Pitch="+pitch + " -> front");
-        client.front(pitch);
+        client.front(Math.abs(pitch));
     } else {
         console.log("Pitch="+pitch + " -> back");
         client.back(Math.abs(pitch));
@@ -82,7 +91,7 @@ var applyYaw = function(yaw) {
         client.counterClockwise(Math.abs(yaw));
     } else {
         console.log("Yaw="+yaw + " -> cw");
-        client.clockwise(yaw);
+        client.clockwise(Math.abs(yaw));
     }
 };
 var yawLeft = function() {
@@ -105,11 +114,11 @@ var roll = 0.0;
 var rollRate = 0.01;
 var applyRoll = function(roll) {
     if (roll > 0.0) {
-        console.log("Roll="+roll + " -> left");
-        client.left(roll);
-    } else {
         console.log("Roll="+roll + " -> right");
         client.right(Math.abs(roll));
+    } else {
+        console.log("Roll="+roll + " -> left");
+        client.left(Math.abs(roll));
     }
 };
 var rollCounterCW = function() {
@@ -198,5 +207,14 @@ stdin.on('data', function(key){
   dispatchKey(key);
 });
 
+app.listen(3000);
 
+io.sockets.on('connection', function(socket) {
+    setInterval(function(){
+        var batteryLevel = client.battery();
+        socket.emit('event', { name: 'battery',value: batteryLevel});
+    },1000);
+});
+
+require("dronestream").listen(3001);
 
