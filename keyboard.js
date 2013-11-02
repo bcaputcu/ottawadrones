@@ -160,6 +160,7 @@ var logger = function(key) {
     if (key == 'h' || key == ' ') return;
 
     if (commandArray.length == 0) {
+        console.log('Timer started');
         startTime = Date.now();
         time = 0;
     } else {
@@ -185,6 +186,8 @@ var applyAll = function(cmd) {
 
 var playReverse = function() {
 
+    console.log('Starting reverse...');
+
     if ( commandArray.length == 0 ) return;
 
     var endTime = commandArray[commandArray.length-1].time;
@@ -197,11 +200,11 @@ var playReverse = function() {
         setTimeout(applyAll, time, cmd);
     }
 
-    setTimeout(applyAll, endTime, {'yaw': 0, 'pitch': 0, 'roll': 0, 'climb': 0 });
     setTimeout(function() {
-        console.log("AUTO LAND");
-        client.land();
-    }, endTime + 100);
+        stabilize();
+        console.log('End of reverse');
+    }, endTime);
+
 
 }
 
@@ -268,6 +271,7 @@ var w = 87,
     q = 81,
     e = 69,
     t = 84,
+    h = 72,
     shift = 16,
     command = 91,
     space = 32;
@@ -280,6 +284,7 @@ isKeyDownNow[d] = false,
 isKeyDownNow[q] = false,
 isKeyDownNow[e] = false,
 isKeyDownNow[t] = false,
+isKeyDownNow[h] = false,
 isKeyDownNow[shift] = false,
 isKeyDownNow[command] = false,
 isKeyDownNow[space] = false;
@@ -292,6 +297,7 @@ wasKeyConsumedOnce[d] = true,
 wasKeyConsumedOnce[q] = true,
 wasKeyConsumedOnce[e] = true,
 wasKeyConsumedOnce[t] = true,
+wasKeyConsumedOnce[h] = true,
 wasKeyConsumedOnce[shift] = true,
 wasKeyConsumedOnce[command] = true,
 wasKeyConsumedOnce[space] = true;
@@ -312,48 +318,55 @@ io.sockets.on('connection', function(socket) {
     });
 });
 
+var consumeKey = function(key) {
+    wasKeyConsumedOnce[key] = true;
+    logger(key);
+}
 
 setInterval(function() {
     if (!wasKeyConsumedOnce[space]) {
-        wasKeyConsumedOnce[space] = true;
         stabilize();
         doTakeOff();
+        consumeKey(space);
     }
     if (isKeyDownNow[shift] || !wasKeyConsumedOnce[shift]) {
         wasKeyConsumedOnce[shift] = true;
         doUp();
+        consumeKey(shift);
     }
     if (isKeyDownNow[command] || !wasKeyConsumedOnce[command]) {
-        wasKeyConsumedOnce[command] = true;
         doDown();
+        consumeKey(command);
     }
     if (isKeyDownNow[w] || !wasKeyConsumedOnce[w]) {
-        wasKeyConsumedOnce[w] = true;
         pitchUp();
+        consumeKey(w);
     }
     if (isKeyDownNow[s] || !wasKeyConsumedOnce[s]) {
-        wasKeyConsumedOnce[s] = true;
         pitchDown();
+        consumeKey(s);
     }
     if (isKeyDownNow[a] || !wasKeyConsumedOnce[a]) {
-        wasKeyConsumedOnce[a] = true;
         yawLeft();
+        consumeKey(a);
     }
     if (isKeyDownNow[d] || !wasKeyConsumedOnce[d]) {
-        wasKeyConsumedOnce[d] = true;
         yawRight();
+        consumeKey(d);
     }
     if (isKeyDownNow[q] || !wasKeyConsumedOnce[q]) {
-        wasKeyConsumedOnce[q] = true;
         rollCW();
+        consumeKey(q);
     }
     if (isKeyDownNow[e] || !wasKeyConsumedOnce[e]) {
-        wasKeyConsumedOnce[e] = true;
         rollCounterCW();
+        consumeKey(e);
+    }
+    if (isKeyDownNow[h] || !wasKeyConsumedOnce[h]) {
+        playReverse();
+        consumeKey(h);
     }
     if (isKeyDownNow[t] || !wasKeyConsumedOnce[t]) {
-        wasKeyConsumedOnce[t] = true;
-
         isKeyDownNow[w] = false;
         isKeyDownNow[s] = false;
         isKeyDownNow[a] = false;
@@ -366,6 +379,8 @@ setInterval(function() {
         isKeyDownNow[space] = false;
 
         stabilize();
+
+        consumeKey(t);
     }
 
 
