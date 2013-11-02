@@ -12,29 +12,6 @@
                 new NodecopterStream(document.getElementById("placeholder"), {port: 3001});
             }
 
-            function startCameraFeed() {
-                navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-
-                var constraints = {audio: false, video: true};
-                var video = document.querySelector("video");
-
-                function successCallback(stream) {
-                    window.stream = stream; // stream available to console
-                    if (window.URL) {
-                        video.src = window.URL.createObjectURL(stream);
-                    } else {
-                        video.src = stream;
-                    }
-                    video.play();
-                }
-
-                function errorCallback(error){
-                    console.log("navigator.getUserMedia error: ", error);
-                }
-
-                navigator.getUserMedia(constraints, successCallback, errorCallback);
-
-            }
             function startArDroneController(){
                 var socket = io.connect('http://localhost:3002');
                 socket.on('connect', function () { // TIP: you can avoid listening on `connect` and listen on events directly too!
@@ -51,39 +28,38 @@
                 });
 
                 var keysThatAreDown = [];
+                var w = 87,
+                    s = 83,
+                    a = 65,
+                    d = 68,
+                    q = 81,
+                    e = 69,
+                    t = 84,
+                    shift = 16,
+                    command = 91,
+                    space = 32;
                 document.onkeydown = function(ev) {
                     if (keysThatAreDown[ev.keyCode]) { return; }
                     keysThatAreDown[ev.keyCode] = true;
                     socket.emit('key_down', ev.keyCode);
-                    console.log('key_down=' + ev.keyCode);
                 };
 
                 document.onkeyup = function(ev) {
                     keysThatAreDown[ev.keyCode] = false;
                     socket.emit('key_up', ev.keyCode);
-                    console.log('key_up=' + ev.keyCode);
                 }
             }
             startArDRoneStream();
-            startCameraFeed();
             startArDroneController();
-
-
-
         })
     </script>
     <style>
-        td {
-            border:1px solid black;
-            border-radius:10px;
-            padding:10px;
-        }
         button{
             font-size: 10pt;
         }
         #battery{
             border:1px solid black;
-            width:500px;
+            width:20px;
             height:20px;
             text-align: center;
         }
@@ -93,11 +69,6 @@
             background: #333;
             overflow: hidden;
             border-radius: 50px;
-            -moz-border-radius: 50px;
-            -webkit-border-radius: 50px;
-            box-shadow: 1px 1px 1px #777;
-            -moz-box-shadow: 1px 1px 1px #777;
-            -webkit-box-shadow: 1px 1px 1px #777;
         }
         .bar > span {
             display: block;
@@ -110,32 +81,64 @@
         .color0 > span {
             background-color: #FF0000;
         }
+        #placeholder{
+            position:relative;
+            height:720px;
+            width:1280px;
+            overflow:hidden;
+        }
+        .interface{
+            background:red;
+            display:block;
+            position:absolute;
+            z-index:10;
+        }
+        .interface-backwards{
+            bottom:0;
+            width:100%;
+            height:20px;
+        }
+        .interface-forward{
+            width:100%;
+            height: 20px;
+        }
+        .interface-left{
+            height:100%;
+            width:20px;
+            background:green;
+            top:0;
+            left:0;
+        }
+        .interface-right{
+            height:100%;
+            width:20px;
+            background:green;
+            top:0;
+            right:0;
+        }
+        img{
+            width:100%;
+            position:relative;
+            z-index:1;
+        }
      </style>
 </head>
 <body>
-<h1>Ar Drone NodeJs Demo</h1>
-<h4>Built using nodejs, socket.io, node-ar-drone and dronestream - By Rohit Ghatol</h4>
-<table>
-    <tr>
-        <td>
+<span id="battery-value"></span>
+<div class="bar color0">
+    <span id="battery-indicator" style="width:50%"></span>
+</div>
+<div id="placeholder">
+    <div class="interface active interface-forward"></div>
+    <div class="interface interface-backwards"></div>
+    <div class="interface interface-left"></div>
+    <div class="interface interface-right"></div>
+</div>
 
-            <span>Battery</span> - <span id="battery-value"></span>
-            <div class="bar color0">
-                <span id="battery-indicator" style="width:50%"></span>
-            </div>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <h1>Ar Drone Parrot Feed</h1>
-            <div id="placeholder"></div>
-        </td>
-        <td>
-            <h1>Laptop Camera Feed</h1>
-            <video id="live" width="640" height="360" autoplay></video>
-        </td>
-    </tr>
-</table>
+
+<!-- <h1>Laptop Camera Feed</h1>
+<video id="live" width="640" height="360" autoplay></video>
+ -->
 
 </body>
 </html>
