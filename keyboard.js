@@ -214,6 +214,10 @@ io.sockets.on('connection', function(socket) {
         var batteryLevel = client.battery();
         socket.emit('event', { name: 'battery',value: batteryLevel});
     },1000);
+
+    socket.on('keyboard_event', function(key) {
+        console.log("Browser sent key=" + key)
+    });
 });
 
 require("dronestream").listen(3001);

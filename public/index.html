@@ -49,10 +49,26 @@
                         $("#battery-value").html(data.value+'%');
                     }
                 });
+
+                var keysThatAreDown = [];
+                document.onkeydown = function(ev) {
+                    if (keysThatAreDown[ev.keyCode]) { return; }
+                    keysThatAreDown[ev.keyCode] = true;
+                    socket.emit('key_down', ev.keyCode);
+                    console.log('key_down=' + ev.keyCode);
+                };
+
+                document.onkeyup = function(ev) {
+                    keysThatAreDown[ev.keyCode] = false;
+                    socket.emit('key_up', ev.keyCode);
+                    console.log('key_up=' + ev.keyCode);
+                }
             }
             startArDRoneStream();
             startCameraFeed();
             startArDroneController();
+
+
 
         })
     </script>
